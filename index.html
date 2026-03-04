@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Sister - 8/3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-light: #E7F2F8;
+            --primary-dark: #A2D2FF;
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Quicksand', sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-light);
+            /* Nền caro mờ */
+            background-image: 
+                linear-gradient(var(--glass-border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
+            background-size: 30px 30px;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text-color);
+            position: relative;
+        }
+
+        /* Hiệu ứng bay lơ lửng background */
+        .floating-bg {
+            position: absolute;
+            font-size: 2rem;
+            color: #fff;
+            opacity: 0.6;
+            animation: float-up 10s linear infinite;
+            z-index: 0;
+        }
+        @keyframes float-up {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        /* Glassmorphism base */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+            z-index: 10;
+        }
+
+        /* --- LOCK SCREEN --- */
+        #lock-screen {
+            display: flex;
+            width: 700px;
+            max-width: 95%;
+            padding: 30px;
+            gap: 30px;
+            
+            /* Đặt trạng thái ban đầu là ẩn và nằm tít trên cao */
+            opacity: 0; 
+            transform: translateY(-80px); 
+            
+            /* Chuyển động siêu mượt khi được kích hoạt */
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform, opacity;
+        }
+
+        /* Class này sẽ được thêm vào bằng JavaScript sau khi trang tải xong */
+        #lock-screen.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .lock-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* Thêm 2 dòng này để xử lý giật lag khi load trang */
+            animation: dropDownSmooth 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            will-change: transform, opacity;
+        }
+
+        /* Thêm đoạn keyframes này ngay bên dưới #lock-screen */
+        @keyframes dropDownSmooth {
+            0% { 
+                opacity: 0; 
+                transform: translateY(-60px); /* Bắt đầu trượt từ trên xuống */
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0); /* Nằm yên tại vị trí gốc */
+            }
+        }
+        .lock-left img {
+            width: 200px;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 20px;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .lock-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .pin-display {
+            font-size: 2rem;
+            letter-spacing: 15px;
+            height: 50px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+        .numpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        .num-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.5);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .num-btn:hover {
+            background: #fff;
+            transform: scale(1.05);
+        }
+
+        /* --- MAIN MENU --- */
+        #main-menu {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            width: 400px;
+            max-width: 90%;
+            animation: fadeIn 0.8s ease forwards;
+        }
+        #main-menu h1 {
+            color: var(--primary-dark);
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.7);
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .menu-btn i { margin-right: 10px; color: var(--primary-dark); }
+        .menu-btn:hover {
+            background: var(--primary-dark);
+            color: #fff;
+            transform: translateY(-3px);
+        }
+        .menu-btn:hover i { color: #fff; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- MODAL CHUNG --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            width: 500px;
+            max-width: 95%;
+            max-height: 90vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: slideUp 0.4s ease forwards;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+        .modal-header h2 {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            text-align: center;
+            flex: 1;
+            margin: 0;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #aaa;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-btn:hover { color: #ff6b6b; }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* --- MUSIC PLAYER --- */
+        .player-wrapper { text-align: center; }
+        .cover-art {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin: 0 auto 20px;
+            animation: spin 10s linear infinite;
+            animation-play-state: paused;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .song-info h3 { margin-bottom: 5px; color: var(--text-color); }
+        .song-info p { font-size: 0.9rem; color: #777; margin-bottom: 20px; }
+        
+        .progress-area {
+            height: 6px;
+            width: 100%;
+            background: rgba(0,0,0,0.1);
+            border-radius: 50px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: inherit;
+            width: 0%;
+            position: relative;
+            border-radius: inherit;
+            background: var(--primary-dark);
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .controls button {
+            background: none; border: none; font-size: 1.5rem;
+            color: var(--primary-dark); cursor: pointer;
+        }
+        .controls .play-pause {
+            width: 50px; height: 50px; border-radius: 50%;
+            background: var(--primary-dark); color: #fff;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .playlist { text-align: left; background: rgba(255,255,255,0.5); border-radius: 10px; padding: 10px; }
+        .playlist-item {
+            padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer;
+            transition: background 0.2s; border-radius: 5px;
+        }
+        .playlist-item:hover, .playlist-item.active { background: rgba(255,255,255,0.9); font-weight: bold; color: var(--primary-dark); }
+
+        /* --- LETTER --- */
+        .letter-content {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.5rem;
+            line-height: 1.8;
+            color: #444;
+            padding: 20px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 10px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+        }
+
+        /* --- IMAGE ALBUM (FILM STRIP) --- */
+        .film-container {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            padding: 20px 0;
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+        }
+        /* Hiệu ứng viền cuộn phim */
+        .film-container::before, .film-container::after {
+            content: ''; position: absolute; left: 0; width: 100%; height: 10px;
+            background-image: linear-gradient(90deg, transparent 50%, #333 50%);
+            background-size: 20px 10px; z-index: 2;
+        }
+        .film-container::before { top: 5px; }
+        .film-container::after { bottom: 5px; }
+
+        .film-track {
+            display: flex;
+            width: max-content;
+            animation: scrollFilm 15s linear infinite;
+        }
+        .film-track img {
+            height: 150px;
+            width: 200px;
+            object-fit: cover;
+            margin: 0 10px;
+            border: 3px solid #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .film-track img:hover { transform: scale(1.05); }
+
+        @keyframes scrollFilm {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } /* Cuộn đúng 1 nửa (do nhân đôi dải ảnh) */
+        }
+
+        /* --- LIGHTBOX --- */
+        #lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none; justify-content: center; align-items: center; z-index: 200;
+        }
+        #lightbox img { max-width: 90%; max-height: 90%; border: 5px solid #fff; border-radius: 10px; }
+        #lightbox .close-lb {
+            position: absolute; top: 20px; right: 30px; font-size: 2rem;
+            color: #fff; cursor: pointer; border: none; background: none;
+        }
+
+    </style>
+</head>
+<body>
+
+    <i class="fa-solid fa-cloud floating-bg" style="left: 10%; animation-duration: 12s;"></i>
+    <i class="fa-solid fa-star floating-bg" style="left: 30%; animation-duration: 15s; font-size: 1rem;"></i>
+    <i class="fa-solid fa-cloud floating-bg" style="left: 60%; animation-duration: 18s; transform: scale(1.5);"></i>
+    <i class="fa-solid fa-star floating-bg" style="left: 80%; animation-duration: 10s; font-size: 1.2rem;"></i>
+
+    <div id="lock-screen" class="glass-panel">
+        <div class="lock-left">
+            <img src="./image/anh_mo_khoa.jpg" alt="Sister">
+            <h3 style="margin-top: 15px; color: var(--primary-dark);">Mật khẩu để mở quà?</h3>
+        </div>
+        <div class="lock-right">
+            <div class="pin-display" id="pin-dots"></div>
+            <div class="numpad">
+                <button class="num-btn" onclick="addPin('1')">1</button>
+                <button class="num-btn" onclick="addPin('2')">2</button>
+                <button class="num-btn" onclick="addPin('3')">3</button>
+                <button class="num-btn" onclick="addPin('4')">4</button>
+                <button class="num-btn" onclick="addPin('5')">5</button>
+                <button class="num-btn" onclick="addPin('6')">6</button>
+                <button class="num-btn" onclick="addPin('7')">7</button>
+                <button class="num-btn" onclick="addPin('8')">8</button>
+                <button class="num-btn" onclick="addPin('9')">9</button>
+                <button class="num-btn" onclick="clearPin()" style="color: #ff6b6b;"><i class="fa-solid fa-delete-left"></i></button>
+                <button class="num-btn" onclick="addPin('0')">0</button>
+                <button class="num-btn" style="visibility: hidden;"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-menu" class="glass-panel">
+        <h1>Happy Women's Day</h1>
+        <button class="menu-btn" onclick="openModal('music-modal')"><i class="fa-solid fa-music"></i> Music Player</button>
+        <button class="menu-btn" onclick="openModal('letter-modal')"><i class="fa-solid fa-envelope-open-text"></i> Letter</button>
+        <button class="menu-btn" onclick="openModal('image-modal')"><i class="fa-solid fa-film"></i> Image Album</button>
+    </div>
+
+    <div id="music-modal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <div></div> <h2>GIAI ĐIỆU</h2>
+                <button class="close-btn" onclick="closeModal('music-modal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body player-wrapper">
+                <img id="cover-art" class="cover-art" src="./image/anhnhac1.jpg" alt="Cover">
+                <div class="song-info">
+                    <h3 id="song-title">Tên bài hát</h3>
+                    <p id="song-artist">Ca sĩ</p>
+                </div>
+                <div class="progress-area" id="progress-area">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="controls">
+                    <button onclick="prevSong()"><i class="fa-solid fa-backward-step"></i></button>
+                    <button class="play-pause" onclick="playPause()"><i class="fa-solid fa-play" id="play-icon"></i></button>
+                    <button onclick="nextSong()"><i class="fa-solid fa-forward-step"></i></button>
+                </div>
+                <div class="playlist" id="playlist">
+                    </div>
+                <audio id="main-audio"></audio>
+            </div>
+        </div>
+    </div>
+
+    <div id="letter-modal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <div></div>
+                <h2>LỜI CHÚC</h2>
+                <button class="close-btn" onclick="closeModal('letter-modal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="letter-content">
+                    Happy Women's Day! Chúc em gái có một ngày 8/3 thật nhiều niềm vui,<br><br>
+                    Thêm một năm nữa rồi, chúc em ngày càng trưởng thành, suy nghĩ chín chắn và luôn giữ được năng lượng tích cực. Đường phía trước cứ tự tin làm những gì mình thích và theo đuổi đam mê nhé. Gặp khó khăn hay áp lực gì thì cứ thoải mái chia sẻ, anh mày và gia đình lúc nào cũng ở đây hỗ trợ.<br><br>
+                    Cố gắng lên nhé!<br>
+                    HÈ HE HÉ !!!!!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="image-modal" class="modal-overlay">
+        <div class="modal-content glass-panel" style="width: 800px;">
+            <div class="modal-header">
+                <div></div>
+                <h2>KHOẢNH KHẮC</h2>
+                <button class="close-btn" onclick="closeModal('image-modal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="film-container">
+                    <div class="film-track" id="film-track">
+                        </div>
+                
+        </div>
+    </div>
+
+    <div id="lightbox">
+        <button class="close-lb" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+        <img id="lightbox-img" src="" alt="Zoomed">
+    </div>
+
+    <script>
+        // --- 1. LOGIC MÀN HÌNH KHÓA ---
+        // --- 0. HIỆU ỨNG LOAD TRANG MƯỢT MÀ ---
+        window.addEventListener('load', () => {
+            // Sự kiện 'load' đảm bảo TẤT CẢ font, icon và ảnh đã tải xong 100%
+            // requestAnimationFrame giúp đồng bộ chuyển động với nhịp quét của màn hình
+            requestAnimationFrame(() => {
+                document.getElementById('lock-screen').classList.add('loaded');
+            });
+        });
+        let currentPin = '';
+        const CORRECT_PIN = '0803';
+        const pinDisplay = document.getElementById('pin-dots');
+
+        function addPin(num) {
+            if (currentPin.length < 4) {
+                currentPin += num;
+                updatePinDisplay();
+                if (currentPin.length === 4) {
+                    setTimeout(checkPin, 300); // Đợi 1 chút để thấy dấu * thứ 4
+                }
+            }
+        }
+
+        function clearPin() {
+            currentPin = currentPin.slice(0, -1);
+            updatePinDisplay();
+        }
+
+        function updatePinDisplay() {
+            pinDisplay.innerText = '*'.repeat(currentPin.length);
+        }
+
+        function checkPin() {
+            if (currentPin === CORRECT_PIN) {
+                // Mở khóa thành công
+                const lockScreen = document.getElementById('lock-screen');
+                lockScreen.style.transform = 'scale(0.8)';
+                lockScreen.style.opacity = '0';
+                setTimeout(() => {
+                    lockScreen.style.display = 'none';
+                    document.getElementById('main-menu').style.display = 'block';
+                }, 800);
+            } else {
+                // Sai mã
+                pinDisplay.style.color = '#ff6b6b';
+                pinDisplay.innerText = 'SAI MÃ!';
+                setTimeout(() => {
+                    currentPin = '';
+                    pinDisplay.style.color = 'var(--primary-dark)';
+                    updatePinDisplay();
+                }, 1000);
+            }
+        }
+
+        // --- 2. LOGIC MODAL ---
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            
+        }
+
+        // --- 3. LOGIC MUSIC PLAYER ---
+        // THAY LINK NHẠC VÀ ẢNH BÌA TẠI ĐÂY
+        const songs = [
+            { name: "Cơn Mưa Xa Dần", artist: "Sơn Tùng M-TP", cover: "./image/anhnhac4.jpg", src: "./music/conmuaxadan.mp3" },
+            { name: "Nắng ấm Ngang Qua", artist: "Sơn Tùng M-TP", cover: "./image/anhnhac2.jpg", src: "./music/nangamngangqua.mp3" },
+            { name: "Chất Gây Hại", artist: "Low-g, Quang Hùng Master-D", cover: "./image/anhnhac3.jpg", src: "./music/chatgayhai.mp3" },
+            { name: "Phóng Đổ Tim Em", artist: "Wren Evans", cover: "./image/anhnhac1.jpg", src: "./music/loichoi.mp3" },
+            { name: "漫步香港1999", artist: "完整版", cover: "./image/anhnhac5.jpg", src: "./music/hoangsa.mp3" }
+        ];
+
+        let songIndex = 0;
+        const audio = document.getElementById('main-audio');
+        const coverArt = document.getElementById('cover-art');
+        const songTitle = document.getElementById('song-title');
+        const songArtist = document.getElementById('song-artist');
+        const playIcon = document.getElementById('play-icon');
+        const progressBar = document.getElementById('progress-bar');
+        const progressArea = document.getElementById('progress-area');
+        const playlistEl = document.getElementById('playlist');
+
+        function loadSong(index) {
+            songTitle.innerText = songs[index].name;
+            songArtist.innerText = songs[index].artist;
+            coverArt.src = songs[index].cover;
+            audio.src = songs[index].src;
+            renderPlaylist();
+        }
+
+        function playPause() {
+            if (audio.paused) {
+                audio.play();
+                playIcon.classList.replace('fa-play', 'fa-pause');
+                coverArt.style.animationPlayState = 'running';
+            } else {
+                audio.pause();
+                playIcon.classList.replace('fa-pause', 'fa-play');
+                coverArt.style.animationPlayState = 'paused';
+            }
+        }
+
+        function nextSong() {
+            songIndex = (songIndex + 1) % songs.length;
+            loadSong(songIndex);
+            playPause();
+        }
+
+        function prevSong() {
+            songIndex = (songIndex - 1 + songs.length) % songs.length;
+            loadSong(songIndex);
+            playPause();
+        }
+
+        audio.addEventListener('timeupdate', (e) => {
+            const currentTime = e.target.currentTime;
+            const duration = e.target.duration;
+            let progressWidth = (currentTime / duration) * 100;
+            progressBar.style.width = `${progressWidth}%`;
+        });
+
+        audio.addEventListener('ended', nextSong);
+
+        progressArea.addEventListener('click', (e) => {
+            let progressWidth = progressArea.clientWidth;
+            let clickedOffsetX = e.offsetX;
+            let songDuration = audio.duration;
+            audio.currentTime = (clickedOffsetX / progressWidth) * songDuration;
+        });
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, i) => {
+                let div = document.createElement('div');
+                div.className = `playlist-item ${i === songIndex ? 'active' : ''}`;
+                div.innerText = `${i + 1}. ${song.name} - ${song.artist}`;
+                div.onclick = () => { songIndex = i; loadSong(songIndex); playPause(); };
+                playlistEl.appendChild(div);
+            });
+        }
+
+        // Khởi tạo bài hát đầu tiên
+        loadSong(songIndex);
+
+        // --- 4. LOGIC IMAGE ALBUM (FILM STRIP) ---
+        // THAY LINK ẢNH CỦA EM GÁI TẠI ĐÂY (Nên dùng ảnh ngang)
+        const imageUrls = [
+            "/./image/anh1.jpg",
+            "/./image/anh2.jpg",
+            "/./image/anh3.jpg",
+            "/./image/anh4.jpg",
+            "/./image/anh5.jpg",
+            "/./image/anh6.jpg",
+        ];
+
+        const filmTrack = document.getElementById('film-track');
+
+        function initFilmStrip() {
+            // Để tạo hiệu ứng cuộn vô tận mượt mà, ta cần nhân đôi danh sách ảnh
+            const doubledImages = [...imageUrls, ...imageUrls];
+            
+            doubledImages.forEach(url => {
+                const img = document.createElement('img');
+                img.src = url;
+                img.onclick = () => openLightbox(url);
+                filmTrack.appendChild(img);
+            });
+        }
+
+        // Logic Lightbox Zoom
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+
+        function openLightbox(src) {
+            lightboxImg.src = src;
+            lightbox.style.display = 'flex';
+            // Tạm dừng cuộn ảnh khi xem
+            filmTrack.style.animationPlayState = 'paused';
+        }
+
+        function closeLightbox() {
+            lightbox.style.display = 'none';
+            // Tiếp tục cuộn ảnh
+            filmTrack.style.animationPlayState = 'running';
+        }
+
+        // Đóng lightbox khi click ra ngoài ảnh
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        initFilmStrip();
+
+    </script>
+</body>
+</html>
